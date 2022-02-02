@@ -1,0 +1,290 @@
+
+
+    import csv
+    a = []
+    print("\n The Given Training Data Set\n")
+    with open('ws.csv','r')as csvFile:
+        reader = csv.reader(csvFile)
+        for row in reader:
+            a.append(row)
+            print(row)
+    num_attributes = len(a[0])-1
+    print("\n the initial value of hypothesis:")
+    S = ['0']*num_attributes
+    G = ['?']*num_attributes
+    print("\n The most Specific hypothesis S0:[0,0,0,0,0,0]\n")
+    print("\n The most general hypothesis G0:[?,?,?,?,?,?]\n")
+
+    for j in range(0,num_attributes):
+        S[j]=a[0][j]
+        
+    print("\n Candidate Elimination Algorithm Hypothesis Version Space Computation\n")
+    temp = []
+
+    for i in range(0,len(a)):
+        print("--------------------------------------------------------------")
+        if a[i][num_attributes] == 'Yes':
+            for j in range(0,num_attributes):
+                if a[i][j]!=S[j]:
+                    S[j]='?'
+            for j in range(0,num_attributes):
+                for k in range(1,len(temp)):
+                    if(temp[k][j]!='?' and temp[k][j]!=S[j]):
+                        del temp[k]
+            print("For Training Example No:{0} the hypothesis is S{0}".format(i+1),S)
+            if(len(temp)==0):
+                print("For Training Example No:{0} the hypothesis is G{0}".format(i+1),G)
+            else:
+                print("For Training Example No:{0} the  hypothesis is G{0}".format(i+1),temp)
+        if a[i][num_attributes] == 'No':
+            for j in range(0,num_attributes):
+                if(S[j]!=a[i][j] and S[j]!='?'):
+                    G[j]=S[j]
+                    temp.append(G)
+                    G=['?']*num_attributes
+            print("For Training Example No:{0} the hypothesis is S{0}".format(i+1),S)
+            print("For Training Example No:{0} the hypothesis is G{0}".format(i+1),temp)
+
+
+     The Given Training Data Set
+
+    ['Sunny', 'Warm', 'Normal', 'Strong', 'Warm', 'Same', 'Yes']
+    ['Sunny', 'Warm', 'High', 'Strong', 'Warm', 'Same', 'Yes']
+    ['Rainy', 'Cold', 'High', 'Strong', 'Warm', 'Change', 'No']
+    ['Sunny', 'Warm', 'High', 'Strong', 'Cool', 'Change', 'Yes']
+
+     the initial value of hypothesis:
+
+     The most Specific hypothesis S0:[0,0,0,0,0,0]
+
+
+     The most general hypothesis G0:[?,?,?,?,?,?]
+
+
+     Candidate Elimination Algorithm Hypothesis Version Space Computation
+
+    --------------------------------------------------------------
+    For Training Example No:1 the hypothesis is S1 ['Sunny', 'Warm', 'Normal', 'Strong', 'Warm', 'Same']
+    For Training Example No:1 the hypothesis is G1 ['?', '?', '?', '?', '?', '?']
+    --------------------------------------------------------------
+    For Training Example No:2 the hypothesis is S2 ['Sunny', 'Warm', '?', 'Strong', 'Warm', 'Same']
+    For Training Example No:2 the hypothesis is G2 ['?', '?', '?', '?', '?', '?']
+    --------------------------------------------------------------
+    For Training Example No:3 the hypothesis is S3 ['Sunny', 'Warm', '?', 'Strong', 'Warm', 'Same']
+    For Training Example No:3 the hypothesis is G3 [['Sunny', '?', '?', '?', '?', '?'], ['?', 'Warm', '?', '?', '?', '?'], ['?', '?', '?', '?', '?', 'Same']]
+    --------------------------------------------------------------
+    For Training Example No:4 the hypothesis is S4 ['Sunny', 'Warm', '?', 'Strong', '?', '?']
+    For Training Example No:4 the  hypothesis is G4 [['Sunny', '?', '?', '?', '?', '?'], ['?', 'Warm', '?', '?', '?', '?']]
+
+    import numpy as np
+    X = np.array(([2, 9], [1, 5], [3, 6]), dtype=float)
+    y = np.array(([92], [86], [89]), dtype=float)
+    y = y/100
+    #Sigmoid Function
+    def sigmoid (x):
+        return 1/(1 + np.exp(-x))
+    #Derivative of Sigmoid Function
+    def derivatives_sigmoid(x):
+        return x * (1 - x)
+    #Variable initialization
+    epoch=10000 #Setting training iterations
+    lr=0.1 #Setting learning rate
+    inputlayer_neurons = 2 #number of features in data set
+    hiddenlayer_neurons = 3 #number of hidden layers neurons
+    output_neurons = 1 #number of neurons at output layer
+    #weight and bias initialization
+    wh=np.random.uniform(size=(inputlayer_neurons,hiddenlayer_neurons))
+    bh=np.random.uniform(size=(1,hiddenlayer_neurons))
+    wout=np.random.uniform(size=(hiddenlayer_neurons,output_neurons))
+    bout=np.random.uniform(size=(1,output_neurons))
+    #draws a random range of numbers uniformly of dim x*y
+    for i in range(epoch):
+    #Forward Propogation
+        hinp1=np.dot(X,wh)
+        hinp=hinp1 + bh
+        hlayer_act = sigmoid(hinp)
+        outinp1=np.dot(hlayer_act,wout)
+        outinp= outinp1+ bout
+        output = sigmoid(outinp)
+    #Backpropagation
+        EO = y-output
+        outgrad = derivatives_sigmoid(output)
+        d_output = EO* outgrad
+        EH = d_output.dot(wout.T)
+        hiddengrad = derivatives_sigmoid(hlayer_act)#how much hidden layer wts contributed to error
+        d_hiddenlayer = EH * hiddengrad
+        wout += hlayer_act.T.dot(d_output) *lr# dotproduct of nextlayererror and currentlayerop
+        bout += np.sum(d_output, axis=0,keepdims=True) *lr
+        wh += X.T.dot(d_hiddenlayer) *lr
+        bh += np.sum(d_hiddenlayer, axis=0,keepdims=True) *lr
+    print("Input: \n" + str(X)) 
+    print("Actual Output: \n" + str(y))
+    print("Predicted Output: \n" ,output)
+
+    Input: 
+    [[2. 9.]
+     [1. 5.]
+     [3. 6.]]
+    Actual Output: 
+    [[0.92]
+     [0.86]
+     [0.89]]
+    Predicted Output: 
+     [[0.89265793]
+     [0.88624911]
+     [0.89055375]]
+
+    import numpy as np
+    import math
+    import csv
+
+    class Node:
+        def __init__(self, attribute):
+            self.attribute = attribute
+            self.children = []
+            self.answer = ""
+            
+        def __str__(self):
+            return self.attribute
+
+    def read_data(filename):
+
+        with open(filename, 'r') as csvfile:
+            datareader = csv.reader(csvfile)
+            metadata = next(datareader)
+            traindata=[]
+            for row in datareader:
+                traindata.append(row)
+        
+        return (metadata, traindata)
+
+    def subtables(data, col, delete):
+        dict = {}
+        items = np.unique(data[:, col]) # get unique values in particular column
+        
+        count = np.zeros((items.shape[0], 1), dtype=np.int32)   #number of row = number of values 
+        
+        for x in range(items.shape[0]):
+            for y in range(data.shape[0]):
+                if data[y, col] == items[x]:
+                    count[x] += 1
+        #count has the data of number of times each value is present in
+                    
+        for x in range(items.shape[0]):
+            dict[items[x]] = np.empty((int(count[x]), data.shape[1]), dtype="|S32")
+             
+            pos = 0
+            for y in range(data.shape[0]):
+                if data[y, col] == items[x]:
+                    dict[items[x]][pos] = data[y]
+                    pos += 1     
+            
+            if delete:
+               dict[items[x]] = np.delete(dict[items[x]], col, 1)
+        return items, dict    
+            
+    def entropy(S):
+        items = np.unique(S)
+        if items.size == 1:
+            return 0
+        
+        counts = np.zeros((items.shape[0], 1))
+        sums = 0
+        
+        for x in range(items.shape[0]):
+       
+            counts[x] = sum(S == items[x]) / (S.size)
+            
+
+
+        for count in counts:
+            sums += -1 * count * math.log(count, 2)
+        
+        return sums
+        
+    def gain_ratio(data, col):
+        items, dict = subtables(data, col, delete=False) 
+        #item is the unique value and dict is the data corresponding to it
+        total_size = data.shape[0]
+        entropies = np.zeros((items.shape[0], 1))
+          
+        for x in range(items.shape[0]):
+            ratio = dict[items[x]].shape[0]/(total_size)
+            entropies[x] = ratio * entropy(dict[items[x]][:, -1])
+            
+            
+        total_entropy = entropy(data[:, -1])
+       
+        
+        for x in range(entropies.shape[0]):
+            total_entropy -= entropies[x]
+            
+        return total_entropy
+
+    def create_node(data, metadata):
+          
+         if (np.unique(data[:, -1])).shape[0] == 1:
+            node = Node("")
+            node.answer = np.unique(data[:, -1])
+            return node
+         
+         gains = np.zeros((data.shape[1] - 1, 1))  
+         #size of gains= number of attribute to calculate gain
+        
+        
+         for col in range(data.shape[1] - 1):
+             gains[col] = gain_ratio(data, col)
+            
+         split = np.argmax(gains)
+      
+        
+         node = Node(metadata[split])    
+         metadata = np.delete(metadata, split, 0)
+                              
+        
+         items, dict = subtables(data, split, delete=True)
+        
+         for x in range(items.shape[0]):
+            child = create_node(dict[items[x]], metadata)
+            node.children.append((items[x], child))
+        
+         return node        
+        
+    def empty(size):
+        s = ""
+        for x in range(size):
+            s += "   "
+        return s
+
+    def print_tree(node, level):
+        if node.answer != "":
+            print(empty(level), node.answer)
+            return
+            
+        print(empty(level), node.attribute)
+        
+        for value, n in node.children:
+            print(empty(level + 1), value)
+            print_tree(n, level + 2)
+            
+
+    metadata, traindata = read_data("tennis.csv")
+    data = np.array(traindata)
+    node = create_node(data, metadata)
+    print_tree(node, 0)
+
+     outlook
+        overcast
+           [b'yes']
+        rainy
+           windy
+              b'Strong'
+                 [b'no']
+              b'Weak'
+                 [b'yes']
+        sunny
+           humidity
+              b'high'
+                 [b'no']
+              b'normal'
+                 [b'yes']
